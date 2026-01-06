@@ -305,9 +305,9 @@ function renderLegend(viz, features, typePalette, numScale, domain) {
   if (viz === "Altitude") {
     titleEl.textContent = "Altitude (m)";
     const rows = [
-      { label: "0–50", color: "hsl(106, 99%, 52%)" },
-      { label: "50.001–120", color: "hsl(58, 100%, 52%)" },
-      { label: "120.001+", color: "hsl(0, 99%, 52%)" }
+      { label: "0–50 meters", color: "hsl(106, 99%, 52%)" },
+      { label: "50–120 meters", color: "hsl(58, 100%, 52%)" },
+      { label: "120+ meters", color: "hsl(0, 99%, 52%)" }
     ];
     rows.forEach(r => {
       const row = document.createElement("div");
