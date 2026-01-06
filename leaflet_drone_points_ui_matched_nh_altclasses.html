@@ -269,8 +269,6 @@ function popupHtml(p) {
   return `
     <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size:12px;">
       <div style="font-weight:700; margin-bottom:6px;">${p.drone_type || "Unknown drone"}</div>
-      <div><b>Flight ID:</b> <span style="word-break:break-all;">${p.flight_id || "—"}</span></div>
-      <div><b>Aeroscope ID:</b> ${p.aeroscope_id || "—"}</div>
       <div><b>Duration:</b> ${durM}</div>
       <div><b>Max altitude:</b> ${alt}</div>
       <div><b>Start:</b> ${p.start_time || "—"}</div>
