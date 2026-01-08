@@ -188,6 +188,31 @@
 const DATA_DIR = "./data";
 const cache = new Map();
 
+const BOUNDARY_URL = "./Westhaven_HavenStad_boundary.geojson";
+let boundaryLayer = null;
+
+async function loadBoundary() {
+  const r = await fetch(BOUNDARY_URL);
+  if (!r.ok) throw new Error(`Failed to load boundary: ${BOUNDARY_URL} (HTTP ${r.status})`);
+  const gj = await r.json();
+
+  // Keep only the polygon (optional: ignores the "Division Line")
+  const polygonOnly = {
+    type: "FeatureCollection",
+    features: (gj.features || []).filter(f => f.geometry && f.geometry.type === "Polygon")
+  };
+
+  boundaryLayer = L.geoJSON(polygonOnly, {
+    style: {
+      color: "white",      // outline color
+      weight: 2,           // outline thickness
+      opacity: 0.9,
+      fill: false
+    }
+  }).addTo(map);
+}
+
+
 // Camera lock: keep center/zoom when switching year/month
 const preserveViewOnDatasetSwitch = true;
 let savedView = null;
