@@ -210,8 +210,9 @@ const geoRenderer = L.canvas({ padding: 0.5 });
 
 /** HELPERS **/
 function monthUrl(year, month) {
-  return `${DATA_DIR}/detected-drone-data_${year}-${month}_AMS_bbox.geojson`;
+  return `${DATA_DIR}/detected-drone-data_${year}-${month}.geojson`;
 }
+
 function safeNum(x) {
   const n = Number(x);
   return Number.isFinite(n) ? n : null;
