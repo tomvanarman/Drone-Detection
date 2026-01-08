@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Drone Detection — Monthly Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Color helper -->
+  <script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
+
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+
+    /* UI panel (Mapbox-ish pills) */
+    .panel {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      z-index: 1000;
+      background: rgba(245, 245, 245, 0.92);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 10px;
+      padding: 12px;
+      max-width: 380px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: #111;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+    }
+    .panel h4 { margin: 0 0 8px 0; font-size: 14px; font-weight: 800; }
+    .subhead { margin: 12px 0 6px 0; font-size: 13px; font-weight: 800; }
+
+    .toggle-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .toggle-container input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .toggle {
+      user-select: none;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.8);
+      color: #111;
+      transition: all 120ms ease;
+    }
+    .toggle-container input:checked + .toggle {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .row label {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(0,0,0,0.85);
+    }
+    select {
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(0,0,0,0.18);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .meta {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: rgba(0,0,0,0.8);
+    }
+    .btn {
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.7);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .hint {
+      margin-top: 10px;
+      font-size: 11px;
+      color: rgba(0,0,0,0.62);
+      line-height: 1.25;
+    }
+    .status {
+      margin-top: 8px;
+      font-size: 11px;
+      color: rgba(0,0,0,0.65);
+    }
+
+    /* Legend (top-right) */
+    .legend {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      z-index: 1000;
+      background: rgba(16,16,16,0.92);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+      min-width: 190px;
+    }
+    .legend h4 { margin: 0 0 8px 0; font-size: 13px; }
+    .swatch-row { display:flex; align-items:center; gap:8px; margin: 4px 0; font-size: 12px; }
+    .swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.25); }
+    .bar {
+      height: 10px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #2c7bb6, #abd9e9, #ffffbf, #fdae61, #d7191c);
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .bar-labels { display:flex; justify-content:space-between; font-size: 11px; opacity: 0.85; margin-top: 4px; }
+
+    /* Popup styling */
+    .leaflet-popup-content-wrapper { border-radius: 10px; }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <div class="panel">
+    <form id="params">
+      <h4>Drone data visualization</h4>
+
+      <div class="subhead">Time filter</div>
+      <div class="row">
+        <label for="yearSel">Year</label>
+        <select id="yearSel">
+          <option value="2023">2023</option>
+          <option value="2024" selected>2024</option>
+          <option value="2025">2025</option>
+        </select>
+
+        <label for="monthSel">Month</label>
+        <select id="monthSel">
+          <option value="01">01</option><option value="02">02</option><option value="03">03</option>
+          <option value="04">04</option><option value="05">05</option><option value="06">06</option>
+          <option value="07">07</option><option value="08">08</option><option value="09">09</option>
+          <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+        </select>
+      </div>
+
+      <div class="subhead">Visualization</div>
+      <div class="toggle-group" aria-label="Visualization type">
+        <label class="toggle-container">
+          <input name="viz" type="radio" value="Altitude" checked>
+          <div class="toggle">Altitude</div>
+        </label>
+        <label class="toggle-container">
+          <input name="viz" type="radio" value="Drone types">
+          <div class="toggle">Drone types</div>
+        </label>
+        <label class="toggle-container">
+          <input name="viz" type="radio" value="Duration">
+          <div class="toggle">Duration</div>
+        </label>
+      </div>
+
+      <div class="subhead">Duration Filter (Min)</div>
+      <div class="toggle-group" aria-label="Duration bins">
+        <label class="toggle-container"><input name="durBin" type="radio" value="All" checked><div class="toggle">All</div></label>
+        <label class="toggle-container"><input name="durBin" type="radio" value="0-5"><div class="toggle">0-5</div></label>
+        <label class="toggle-container"><input name="durBin" type="radio" value="5-10"><div class="toggle">5-10</div></label>
+        <label class="toggle-container"><input name="durBin" type="radio" value="10-20"><div class="toggle">10-20</div></label>
+        <label class="toggle-container"><input name="durBin" type="radio" value="20-60"><div class="toggle">20-60</div></label>
+        <label class="toggle-container"><input name="durBin" type="radio" value="More than an hour"><div class="toggle">More than an hour</div></label>
+      </div>
+
+      <div class="meta">
+        <button type="button" class="btn" id="resetBtn">Reset view</button>
+        <span id="count"></span>
+      </div>
+
+      <div class="status" id="status"></div>
+
+      <div class="hint">
+        Files must live in <code>/data/</code> as:<br/>
+        <code>detected-drone-data_YYYY-MM.geojson</code>
+      </div>
+    </form>
+  </div>
+
+  <div class="legend" id="legend">
+    <h4 id="legendTitle">Legend</h4>
+    <div id="legendBody"></div>
+  </div>
+
+<script>
+/** ========= CONFIG ========= */
+const DATA_DIR = "./data";
+const geojsonCache = new Map();
+
+function monthFile(year, month) {
+  return `${DATA_DIR}/detected-drone-data_${year}-${month}.geojson`;
+}
+
+/** ========= MAP ========= */
+const map = L.map("map", { zoomControl: true });
+
+// Dark basemap (OSM data via CARTO)
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+  maxZoom: 20,
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+}).addTo(map);
+
+// Canvas renderer for faster point drawing
+const geoRenderer = L.canvas({ padding: 0.5 });
+
+let geoLayer = null;
+let allFeatures = [];
+let initialBounds = null;
+
+/** ========= HELPERS ========= */
+function safeNum(x) {
+  const n = Number(x);
+  return Number.isFinite(n) ? n : null;
+}
+function uniq(arr) {
+  return Array.from(new Set(arr.filter(v => v !== null && v !== undefined && v !== "")));
+}
+function buildTypePalette(types) {
+  const colors = chroma.scale(["#00c2ff","#7c4dff","#ff5c93","#2ee59d","#ffd166","#ff8a00","#a0ff72","#00d1b2","#f72585","#b5179e"])
+                       .colors(Math.max(3, types.length));
+  const out = {};
+  types.forEach((t,i)=> out[t] = colors[i % colors.length]);
+  return out;
+}
+function getSelected(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+function durationMin(feature) {
+  // expecting duration_s in seconds; if your files use different field, adapt here
+  const s = safeNum(feature.properties.duration_s);
+  return (s === null) ? null : (s / 60.0);
+}
+function passDurBin(feature, bin) {
+  if (bin === "All") return true;
+  const dm = durationMin(feature);
+  if (dm === null) return false;
+  if (bin === "0-5") return dm >= 0 && dm < 5;
+  if (bin === "5-10") return dm >= 5 && dm < 10;
+  if (bin === "10-20") return dm >= 10 && dm < 20;
+  if (bin === "20-60") return dm >= 20 && dm < 60;
+  if (bin === "More than an hour") return dm >= 60;
+  return true;
+}
+
+// Altitude classes requested earlier
+function altitudeClassColor(maxAltM) {
+  const v = Number(maxAltM);
+  if (!Number.isFinite(v)) return "#666";
+  if (v <= 50) return "hsl(106, 99%, 52%)";          // 0–50
+  if (v <= 120) return "hsl(58, 100%, 52%)";         // 50.001–120
+  return "hsl(0, 99%, 52%)";                         // 120.001+
+}
+
+function popupHtml(p) {
+  const durM = (p.duration_s === null || p.duration_s === undefined) ? "—" : (Number(p.duration_s)/60).toFixed(1) + " min";
+  const alt = (p.max_altitude_m === null || p.max_altitude_m === undefined) ? "—" : Math.round(Number(p.max_altitude_m)) + " m";
+  return `
+    <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size:12px;">
+      <div style="font-weight:800; margin-bottom:6px;">${p.drone_type || "Unknown drone"}</div>
+      <div><b>Duration:</b> ${durM}</div>
+      <div><b>Max altitude:</b> ${alt}</div>
+      <div><b>Start:</b> ${p.start_time || "—"}</div>
+      <div><b>End:</b> ${p.end_time || "—"}</div>
+    </div>
+  `;
+}
+
+function renderLegend(viz, features, typePalette, durationDomain) {
+  const titleEl = document.getElementById("legendTitle");
+  const bodyEl = document.getElementById("legendBody");
+  bodyEl.innerHTML = "";
+
+  if (viz === "Drone types") {
+    titleEl.textContent = "Drone types";
+    const types = uniq(features.map(f => f.properties.drone_type)).sort();
+    types.slice(0, 14).forEach(t => {
+      const row = document.createElement("div");
+      row.className = "swatch-row";
+      row.innerHTML = `<div class="swatch" style="background:${typePalette[t] || "#00c2ff"}"></div><div>${t}</div>`;
+      bodyEl.appendChild(row);
+    });
+    if (types.length > 14) {
+      const more = document.createElement("div");
+      more.style.fontSize = "11px";
+      more.style.opacity = "0.75";
+      more.style.marginTop = "6px";
+      more.textContent = `+ ${types.length - 14} more`;
+      bodyEl.appendChild(more);
+    }
+    return;
+  }
+
+  if (viz === "Altitude") {
+    titleEl.textContent = "Max altitude (m)";
+    const rows = [
+      { label: "0–50", color: "hsl(106, 99%, 52%)" },
+      { label: "50.001–120", color: "hsl(58, 100%, 52%)" },
+      { label: "120.001+", color: "hsl(0, 99%, 52%)" }
+    ];
+    rows.forEach(r => {
+      const row = document.createElement("div");
+      row.className = "swatch-row";
+      row.innerHTML = `<div class="swatch" style="background:${r.color};"></div><div>${r.label}</div>`;
+      bodyEl.appendChild(row);
+    });
+    return;
+  }
+
+  // Duration gradient legend
+  titleEl.textContent = "Duration (min)";
+  const bar = document.createElement("div");
+  bar.className = "bar";
+  bodyEl.appendChild(bar);
+
+  const labels = document.createElement("div");
+  labels.className = "bar-labels";
+  labels.innerHTML = `<span>${Math.round(durationDomain[0])}</span><span>${Math.round(durationDomain[1])}</span>`;
+  bodyEl.appendChild(labels);
+}
+
+function styleFor(feature, viz, typePalette, durationScale, durationDomain) {
+  let color = "#00c2ff";
+
+  if (viz === "Drone types") {
+    color = typePalette[feature.properties.drone_type] || "#00c2ff";
+  } else if (viz === "Altitude") {
+    const v = safeNum(feature.properties.max_altitude_m);
+    color = altitudeClassColor(v);
+  } else if (viz === "Duration") {
+    const v0 = durationMin(feature);
+    if (v0 === null) {
+      color = "#666";
+    } else {
+      const v = Math.min(Math.max(v0, durationDomain[0]), durationDomain[1]); // clamp
+      color = durationScale(v).hex();
+    }
+  }
+
+  return {
+    radius: 4,
+    color: color,
+    fillColor: color,
+    weight: 0,
+    fillOpacity: 0.85
+  };
+}
+
+/** ========= DATA LOADING ========= */
+async function loadMonthData(year, month) {
+  const url = monthFile(year, month);
+  if (geojsonCache.has(url)) return geojsonCache.get(url);
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to load ${url} (HTTP ${res.status})`);
+  const data = await res.json();
+
+  geojsonCache.set(url, data);
+  return data;
+}
+
+async function refreshDataset() {
+  const year = document.getElementById("yearSel").value;
+  const month = document.getElementById("monthSel").value;
+  const url = monthFile(year, month);
+
+  document.getElementById("status").textContent = `Loading ${year}-${month}…`;
+
+  const gj = await loadMonthData(year, month);
+
+  allFeatures = (gj.features || []).map(f => {
+    f.properties = f.properties || {};
+    return f;
+  });
+
+  // Reset bounds per month so Reset view fits current month
+  initialBounds = null;
+
+  // Draw with current viz settings
+  redraw();
+
+  document.getElementById("status").textContent = `Loaded: ${url}`;
+}
+
+/** ========= DRAW ========= */
+function redraw() {
+  const viz = getSelected("viz") || "Altitude";
+  const bin = getSelected("durBin") || "All";
+
+  const filtered = allFeatures.filter(f => passDurBin(f, bin));
+
+  document.getElementById("count").textContent = `${filtered.length.toLocaleString()} points`;
+
+  // Color config
+  let typePalette = {};
+  let durationDomain = [0, 60];
+  let durationScale = (v) => chroma("#00c2ff");
+
+  if (viz === "Drone types") {
+    const types = uniq(filtered.map(f => f.properties.drone_type)).sort();
+    typePalette = buildTypePalette(types);
+  } else if (viz === "Duration") {
+    const mins = filtered.map(f => durationMin(f)).filter(v => v !== null).sort((a,b)=>a-b);
+    if (mins.length) {
+      const lo = mins[Math.floor(mins.length * 0.02)];
+      const hi = mins[Math.floor(mins.length * 0.98)];
+      durationDomain = [lo, hi];
+    }
+    durationScale = chroma.scale(["#2c7bb6","#abd9e9","#ffffbf","#fdae61","#d7191c"]).domain(durationDomain);
+  }
+
+  renderLegend(viz, filtered, typePalette, durationDomain);
+
+  // Rebuild layer
+  if (geoLayer) geoLayer.remove();
+
+  const fc = { type:"FeatureCollection", features: filtered };
+
+  geoLayer = L.geoJSON(fc, {
+    renderer: geoRenderer,
+    pointToLayer: (feature, latlng) => L.circleMarker(latlng, styleFor(feature, viz, typePalette, durationScale, durationDomain)),
+    onEachFeature: (feature, layer) => {
+      layer.bindPopup(popupHtml(feature.properties), { maxWidth: 340 });
+      layer.on("mouseover", () => layer.openPopup());
+      layer.on("mouseout", () => layer.closePopup());
+    }
+  }).addTo(map);
+
+  if (!initialBounds) {
+    initialBounds = geoLayer.getBounds();
+    if (initialBounds && initialBounds.isValid && initialBounds.isValid()) {
+      map.fitBounds(initialBounds, { padding: [25, 25] });
+    }
+  }
+}
+
+/** ========= EVENTS ========= */
+document.querySelectorAll('input[name="viz"]').forEach(el => el.addEventListener("change", redraw));
+document.querySelectorAll('input[name="durBin"]').forEach(el => el.addEventListener("change", redraw));
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (initialBounds) map.fitBounds(initialBounds, { padding: [25, 25] });
+});
+
+document.getElementById("yearSel").addEventListener("change", () => refreshDataset().catch(handleErr));
+document.getElementById("monthSel").addEventListener("change", () => refreshDataset().catch(handleErr));
+
+function handleErr(err) {
+  console.error(err);
+  document.getElementById("status").textContent = "Error: " + err.message;
+  alert(err.message + "\n\nTip: On GitHub Pages, confirm the file exists at /data/detected-drone-data_YYYY-MM.geojson and matches case exactly.");
+}
+
+// initial load
+refreshDataset().catch(handleErr);
+</script>
+</body>
+</html>
