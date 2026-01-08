@@ -3215,5 +3215,3 @@
 { "type": "Feature", "properties": { "Drone Type": "Mini 4 Pro", "Duration": 14, "Max Altitude": 81.6, "Detection Longitude": 52.412391530136787, "Detection Latitude": 4.9424198901152891, "Detection Time(Start)": "2024-10-31" }, "geometry": null }
 ]
 }
-
-
