@@ -393,6 +393,12 @@ async function loadMonthData(year, month) {
 }
 
 async function refreshDataset() {
+  if (preserveView) {
+  savedView = {
+    center: map.getCenter(),
+    zoom: map.getZoom()
+  };
+}
   const year = document.getElementById("yearSel").value;
   const month = document.getElementById("monthSel").value;
   const url = monthFile(year, month);
@@ -459,10 +465,11 @@ function redraw() {
     }
   }).addTo(map);
 
-  if (!initialBounds) {
-    initialBounds = geoLayer.getBounds();
-    if (initialBounds && initialBounds.isValid && initialBounds.isValid()) {
-      map.fitBounds(initialBounds, { padding: [25, 25] });
+     if (!initialBounds && !preserveView) {
+        initialBounds = geoLayer.getBounds();
+          map.fitBounds(initialBounds, { padding: [25, 25] });
+          }
+
     }
   }
 }
