@@ -237,6 +237,8 @@ const geoRenderer = L.canvas({ padding: 0.5 });
 let geoLayer = null;
 let allFeatures = [];
 let initialBounds = null;
+let preserveView = true;   // toggle if you ever want auto-zoom back
+let savedView = null;     // { center, zoom }  
 
 /** ========= HELPERS ========= */
 function safeNum(x) {
