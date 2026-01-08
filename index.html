@@ -398,6 +398,11 @@ async function refreshDataset() {
     center: map.getCenter(),
     zoom: map.getZoom()
   };
+  if (preserveView && savedView) {
+  map.setView(savedView.center, savedView.zoom, { animate: false });
+}
+
+
 }
   const year = document.getElementById("yearSel").value;
   const month = document.getElementById("monthSel").value;
