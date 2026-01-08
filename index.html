@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Drone Detection — Monthly Viewer</title>
+  <title>Drone Detection</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Leaflet -->
@@ -18,7 +18,6 @@
     body { margin: 0; padding: 0; }
     #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 
-    /* UI panel (Mapbox-ish pills) */
     .panel {
       position: absolute;
       top: 18px;
@@ -33,20 +32,11 @@
       color: #111;
       box-shadow: 0 10px 25px rgba(0,0,0,0.18);
     }
-    .panel h4 { margin: 0 0 8px 0; font-size: 14px; font-weight: 800; }
-    .subhead { margin: 12px 0 6px 0; font-size: 13px; font-weight: 800; }
+    .panel h4 { margin: 0 0 8px 0; font-size: 14px; font-weight: 700; }
+    .subhead { margin: 12px 0 6px 0; font-size: 13px; font-weight: 700; }
 
-    .toggle-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-    .toggle-container input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
+    .toggle-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .toggle-container input { position: absolute; opacity: 0; pointer-events: none; }
     .toggle {
       user-select: none;
       cursor: pointer;
@@ -62,26 +52,6 @@
       background: #111;
       color: #fff;
       border-color: #111;
-    }
-
-    .row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .row label {
-      font-size: 12px;
-      font-weight: 700;
-      color: rgba(0,0,0,0.85);
-    }
-    select {
-      background: rgba(255,255,255,0.8);
-      border: 1px solid rgba(0,0,0,0.18);
-      border-radius: 8px;
-      padding: 6px 8px;
-      font-size: 12px;
-      outline: none;
     }
 
     .meta {
@@ -101,19 +71,22 @@
       border-radius: 8px;
       font-size: 12px;
     }
+    select {
+      margin-left: 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.8);
+      font-size: 12px;
+      outline: none;
+    }
     .hint {
       margin-top: 10px;
       font-size: 11px;
       color: rgba(0,0,0,0.62);
       line-height: 1.25;
     }
-    .status {
-      margin-top: 8px;
-      font-size: 11px;
-      color: rgba(0,0,0,0.65);
-    }
 
-    /* Legend (top-right) */
     .legend {
       position: absolute;
       right: 18px;
@@ -125,7 +98,7 @@
       border-radius: 10px;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       box-shadow: 0 10px 25px rgba(0,0,0,0.35);
-      min-width: 190px;
+      min-width: 180px;
     }
     .legend h4 { margin: 0 0 8px 0; font-size: 13px; }
     .swatch-row { display:flex; align-items:center; gap:8px; margin: 4px 0; font-size: 12px; }
@@ -137,38 +110,36 @@
       border: 1px solid rgba(255,255,255,0.18);
     }
     .bar-labels { display:flex; justify-content:space-between; font-size: 11px; opacity: 0.85; margin-top: 4px; }
-
-    /* Popup styling */
     .leaflet-popup-content-wrapper { border-radius: 10px; }
   </style>
 </head>
-
 <body>
   <div id="map"></div>
 
   <div class="panel">
     <form id="params">
-      <h4>Drone data visualization</h4>
+      <h4>Drone data visualization:</h4>
 
-      <div class="subhead">Time filter</div>
-      <div class="row">
-        <label for="yearSel">Year</label>
-        <select id="yearSel">
-          <option value="2023">2023</option>
-          <option value="2024" selected>2024</option>
-          <option value="2025">2025</option>
-        </select>
-
-        <label for="monthSel">Month</label>
-        <select id="monthSel">
-          <option value="01">01</option><option value="02">02</option><option value="03">03</option>
-          <option value="04">04</option><option value="05">05</option><option value="06">06</option>
-          <option value="07">07</option><option value="08">08</option><option value="09">09</option>
-          <option value="10">10</option><option value="11">11</option><option value="12">12</option>
-        </select>
+      <div class="subhead">Dataset</div>
+      <div class="toggle-group" style="gap:10px;">
+        <label style="font-size:12px;">Year
+          <select id="yearSel">
+            <option>2023</option>
+            <option selected>2024</option>
+            <option>2025</option>
+          </select>
+        </label>
+        <label style="font-size:12px;">Month
+          <select id="monthSel">
+            <option value="01">01</option><option value="02">02</option><option value="03">03</option>
+            <option value="04">04</option><option value="05">05</option><option value="06">06</option>
+            <option value="07">07</option><option value="08">08</option><option value="09">09</option>
+            <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          </select>
+        </label>
       </div>
 
-      <div class="subhead">Visualization</div>
+      <div class="subhead" style="margin-top:12px;">Mode</div>
       <div class="toggle-group" aria-label="Visualization type">
         <label class="toggle-container">
           <input name="viz" type="radio" value="Altitude" checked>
@@ -184,7 +155,7 @@
         </label>
       </div>
 
-      <div class="subhead">Duration Filter (Min)</div>
+      <div class="subhead">Duration Filter (Min):</div>
       <div class="toggle-group" aria-label="Duration bins">
         <label class="toggle-container"><input name="durBin" type="radio" value="All" checked><div class="toggle">All</div></label>
         <label class="toggle-container"><input name="durBin" type="radio" value="0-5"><div class="toggle">0-5</div></label>
@@ -195,15 +166,14 @@
       </div>
 
       <div class="meta">
-        <button type="button" class="btn" id="resetBtn">Reset view</button>
+        <button type="button" class="btn" id="resetBtn" title="Zoom to current dataset">Reset view</button>
         <span id="count"></span>
+        <span id="status" style="opacity:0.7;"></span>
       </div>
 
-      <div class="status" id="status"></div>
-
       <div class="hint">
-        Files must live in <code>/data/</code> as:<br/>
-        <code>detected-drone-data_YYYY-MM.geojson</code>
+        Put monthly GeoJSON files in <code>/data</code> named like:<br/>
+        <code>detected-drone-data_YYYY-MM_AMS_bbox.geojson</code>
       </div>
     </form>
   </div>
@@ -214,33 +184,34 @@
   </div>
 
 <script>
-/** ========= CONFIG ========= */
+/** CONFIG **/
 const DATA_DIR = "./data";
-const geojsonCache = new Map();
+const cache = new Map();
 
-function monthFile(year, month) {
-  return `${DATA_DIR}/detected-drone-data_${year}-${month}.geojson`;
-}
+// Camera lock: keep center/zoom when switching year/month
+const preserveViewOnDatasetSwitch = true;
+let savedView = null;
+let hasInitializedView = false;
 
-/** ========= MAP ========= */
+/** MAP **/
 const map = L.map("map", { zoomControl: true });
 
-// Dark basemap (OSM data via CARTO)
 L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
   maxZoom: 20,
   attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
 }).addTo(map);
 
-// Canvas renderer for faster point drawing
-const geoRenderer = L.canvas({ padding: 0.5 });
-
 let geoLayer = null;
 let allFeatures = [];
-let initialBounds = null;
-let preserveView = true;   // toggle if you ever want auto-zoom back
-let savedView = null;     // { center, zoom }  
+let currentBounds = null;
 
-/** ========= HELPERS ========= */
+// Canvas renderer helps performance with lots of points
+const geoRenderer = L.canvas({ padding: 0.5 });
+
+/** HELPERS **/
+function monthUrl(year, month) {
+  return `${DATA_DIR}/detected-drone-data_${year}-${month}_AMS_bbox.geojson`;
+}
 function safeNum(x) {
   const n = Number(x);
   return Number.isFinite(n) ? n : null;
@@ -248,19 +219,11 @@ function safeNum(x) {
 function uniq(arr) {
   return Array.from(new Set(arr.filter(v => v !== null && v !== undefined && v !== "")));
 }
-function buildTypePalette(types) {
-  const colors = chroma.scale(["#00c2ff","#7c4dff","#ff5c93","#2ee59d","#ffd166","#ff8a00","#a0ff72","#00d1b2","#f72585","#b5179e"])
-                       .colors(Math.max(3, types.length));
-  const out = {};
-  types.forEach((t,i)=> out[t] = colors[i % colors.length]);
-  return out;
-}
 function getSelected(name) {
   const el = document.querySelector(`input[name="${name}"]:checked`);
   return el ? el.value : null;
 }
 function durationMin(feature) {
-  // expecting duration_s in seconds; if your files use different field, adapt here
   const s = safeNum(feature.properties.duration_s);
   return (s === null) ? null : (s / 60.0);
 }
@@ -276,13 +239,37 @@ function passDurBin(feature, bin) {
   return true;
 }
 
-// Altitude classes requested earlier
+// 3 altitude classes (your exact colors)
 function altitudeClassColor(maxAltM) {
   const v = Number(maxAltM);
   if (!Number.isFinite(v)) return "#666";
-  if (v <= 50) return "hsl(106, 99%, 52%)";          // 0–50
-  if (v <= 120) return "hsl(58, 100%, 52%)";         // 50.001–120
-  return "hsl(0, 99%, 52%)";                         // 120.001+
+  if (v <= 50) return "hsl(106, 99%, 52%)";
+  if (v <= 120) return "hsl(58, 100%, 52%)";
+  return "hsl(0, 99%, 52%)";
+}
+
+function buildTypePalette(types) {
+  const colors = chroma
+    .scale(["#00c2ff","#7c4dff","#ff5c93","#2ee59d","#ffd166","#ff8a00","#a0ff72","#00d1b2","#f72585","#b5179e"])
+    .colors(Math.max(3, types.length));
+  const out = {};
+  types.forEach((t,i)=> out[t] = colors[i % colors.length]);
+  return out;
+}
+function getNumericDomain(values) {
+  const vals = values.filter(v => v !== null).sort((a,b)=>a-b);
+  if (!vals.length) return [0,1];
+  const lo = vals[Math.floor(vals.length * 0.02)];
+  const hi = vals[Math.floor(vals.length * 0.98)];
+  return [lo, hi];
+}
+async function loadGeoJSON(url) {
+  if (cache.has(url)) return cache.get(url);
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`Failed to load ${url} (HTTP ${r.status})`);
+  const gj = await r.json();
+  cache.set(url, gj);
+  return gj;
 }
 
 function popupHtml(p) {
@@ -290,19 +277,34 @@ function popupHtml(p) {
   const alt = (p.max_altitude_m === null || p.max_altitude_m === undefined) ? "—" : Math.round(Number(p.max_altitude_m)) + " m";
   return `
     <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size:12px;">
-      <div style="font-weight:800; margin-bottom:6px;">${p.drone_type || "Unknown drone"}</div>
+      <div style="font-weight:700; margin-bottom:6px;">${p.drone_type || "Unknown drone"}</div>
       <div><b>Duration:</b> ${durM}</div>
       <div><b>Max altitude:</b> ${alt}</div>
       <div><b>Start:</b> ${p.start_time || "—"}</div>
-      <div><b>End:</b> ${p.end_time || "—"}</div>
     </div>
   `;
 }
 
-function renderLegend(viz, features, typePalette, durationDomain) {
+function renderLegend(viz, features, typePalette, domain) {
   const titleEl = document.getElementById("legendTitle");
   const bodyEl = document.getElementById("legendBody");
   bodyEl.innerHTML = "";
+
+  if (viz === "Altitude") {
+    titleEl.textContent = "Altitude (m)";
+    const rows = [
+      { label: "0–50", color: "hsl(106, 99%, 52%)" },
+      { label: "50.001–120", color: "hsl(58, 100%, 52%)" },
+      { label: "120.001+", color: "hsl(0, 99%, 52%)" }
+    ];
+    rows.forEach(r => {
+      const row = document.createElement("div");
+      row.className = "swatch-row";
+      row.innerHTML = `<div class="swatch" style="background:${r.color};"></div><div>${r.label}</div>`;
+      bodyEl.appendChild(row);
+    });
+    return;
+  }
 
   if (viz === "Drone types") {
     titleEl.textContent = "Drone types";
@@ -324,23 +326,7 @@ function renderLegend(viz, features, typePalette, durationDomain) {
     return;
   }
 
-  if (viz === "Altitude") {
-    titleEl.textContent = "Max altitude (m)";
-    const rows = [
-      { label: "0–50", color: "hsl(106, 99%, 52%)" },
-      { label: "50.001–120", color: "hsl(58, 100%, 52%)" },
-      { label: "120.001+", color: "hsl(0, 99%, 52%)" }
-    ];
-    rows.forEach(r => {
-      const row = document.createElement("div");
-      row.className = "swatch-row";
-      row.innerHTML = `<div class="swatch" style="background:${r.color};"></div><div>${r.label}</div>`;
-      bodyEl.appendChild(row);
-    });
-    return;
-  }
-
-  // Duration gradient legend
+  // Duration legend (gradient)
   titleEl.textContent = "Duration (min)";
   const bar = document.createElement("div");
   bar.className = "bar";
@@ -348,121 +334,54 @@ function renderLegend(viz, features, typePalette, durationDomain) {
 
   const labels = document.createElement("div");
   labels.className = "bar-labels";
-  labels.innerHTML = `<span>${Math.round(durationDomain[0])}</span><span>${Math.round(durationDomain[1])}</span>`;
+  labels.innerHTML = `<span>${Math.round(domain[0])}</span><span>${Math.round(domain[1])}</span>`;
   bodyEl.appendChild(labels);
 }
 
-function styleFor(feature, viz, typePalette, durationScale, durationDomain) {
+function styleFor(feature, viz, typePalette, durationScale) {
   let color = "#00c2ff";
 
-  if (viz === "Drone types") {
-    color = typePalette[feature.properties.drone_type] || "#00c2ff";
-  } else if (viz === "Altitude") {
+  if (viz === "Altitude") {
     const v = safeNum(feature.properties.max_altitude_m);
     color = altitudeClassColor(v);
+  } else if (viz === "Drone types") {
+    color = typePalette[feature.properties.drone_type] || "#00c2ff";
   } else if (viz === "Duration") {
-    const v0 = durationMin(feature);
-    if (v0 === null) {
-      color = "#666";
-    } else {
-      const v = Math.min(Math.max(v0, durationDomain[0]), durationDomain[1]); // clamp
-      color = durationScale(v).hex();
-    }
+    const v = durationMin(feature);
+    color = (v === null) ? "#666" : durationScale(v).hex();
   }
 
-  return {
-    radius: 4,
-    color: color,
-    fillColor: color,
-    weight: 0,
-    fillOpacity: 0.85
-  };
+  return { radius: 4, color, fillColor: color, weight: 0, fillOpacity: 0.85 };
 }
 
-/** ========= DATA LOADING ========= */
-async function loadMonthData(year, month) {
-  const url = monthFile(year, month);
-  if (geojsonCache.has(url)) return geojsonCache.get(url);
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to load ${url} (HTTP ${res.status})`);
-  const data = await res.json();
-
-  geojsonCache.set(url, data);
-  return data;
-}
-
-async function refreshDataset() {
-  if (preserveView) {
-  savedView = {
-    center: map.getCenter(),
-    zoom: map.getZoom()
-  };
-  if (preserveView && savedView) {
-  map.setView(savedView.center, savedView.zoom, { animate: false });
-}
-
-
-}
-  const year = document.getElementById("yearSel").value;
-  const month = document.getElementById("monthSel").value;
-  const url = monthFile(year, month);
-
-  document.getElementById("status").textContent = `Loading ${year}-${month}…`;
-
-  const gj = await loadMonthData(year, month);
-
-  allFeatures = (gj.features || []).map(f => {
-    f.properties = f.properties || {};
-    return f;
-  });
-
-  // Reset bounds per month so Reset view fits current month
-  initialBounds = null;
-
-  // Draw with current viz settings
-  redraw();
-
-  document.getElementById("status").textContent = `Loaded: ${url}`;
-}
-
-/** ========= DRAW ========= */
 function redraw() {
   const viz = getSelected("viz") || "Altitude";
   const bin = getSelected("durBin") || "All";
 
   const filtered = allFeatures.filter(f => passDurBin(f, bin));
-
   document.getElementById("count").textContent = `${filtered.length.toLocaleString()} points`;
 
-  // Color config
+  // Color mapping setup
   let typePalette = {};
-  let durationDomain = [0, 60];
   let durationScale = (v) => chroma("#00c2ff");
+  let durationDomain = [0, 60];
 
   if (viz === "Drone types") {
     const types = uniq(filtered.map(f => f.properties.drone_type)).sort();
     typePalette = buildTypePalette(types);
   } else if (viz === "Duration") {
-    const mins = filtered.map(f => durationMin(f)).filter(v => v !== null).sort((a,b)=>a-b);
-    if (mins.length) {
-      const lo = mins[Math.floor(mins.length * 0.02)];
-      const hi = mins[Math.floor(mins.length * 0.98)];
-      durationDomain = [lo, hi];
-    }
+    const mins = filtered.map(f => durationMin(f)).filter(v => v !== null);
+    durationDomain = getNumericDomain(mins);
     durationScale = chroma.scale(["#2c7bb6","#abd9e9","#ffffbf","#fdae61","#d7191c"]).domain(durationDomain);
   }
 
   renderLegend(viz, filtered, typePalette, durationDomain);
 
-  // Rebuild layer
   if (geoLayer) geoLayer.remove();
 
-  const fc = { type:"FeatureCollection", features: filtered };
-
-  geoLayer = L.geoJSON(fc, {
+  geoLayer = L.geoJSON({ type:"FeatureCollection", features: filtered }, {
     renderer: geoRenderer,
-    pointToLayer: (feature, latlng) => L.circleMarker(latlng, styleFor(feature, viz, typePalette, durationScale, durationDomain)),
+    pointToLayer: (feature, latlng) => L.circleMarker(latlng, styleFor(feature, viz, typePalette, durationScale)),
     onEachFeature: (feature, layer) => {
       layer.bindPopup(popupHtml(feature.properties), { maxWidth: 340 });
       layer.on("mouseover", () => layer.openPopup());
@@ -470,32 +389,65 @@ function redraw() {
     }
   }).addTo(map);
 
-     if (!initialBounds && !preserveView) {
-        initialBounds = geoLayer.getBounds();
-          map.fitBounds(initialBounds, { padding: [25, 25] });
-          }
+  try { currentBounds = geoLayer.getBounds(); } catch(e) { currentBounds = null; }
 
-    }
+  // First load only: zoom to data once
+  if (!hasInitializedView && currentBounds && currentBounds.isValid()) {
+    map.fitBounds(currentBounds, { padding: [25, 25] });
+    hasInitializedView = true;
   }
 }
 
-/** ========= EVENTS ========= */
-document.querySelectorAll('input[name="viz"]').forEach(el => el.addEventListener("change", redraw));
-document.querySelectorAll('input[name="durBin"]').forEach(el => el.addEventListener("change", redraw));
-document.getElementById("resetBtn").addEventListener("click", () => {
-  if (initialBounds) map.fitBounds(initialBounds, { padding: [25, 25] });
-});
+/** DATASET SWITCH (Camera lock happens here) **/
+async function refreshDataset() {
+  const year = document.getElementById("yearSel").value;
+  const month = document.getElementById("monthSel").value;
+  const url = monthUrl(year, month);
 
-document.getElementById("yearSel").addEventListener("change", () => refreshDataset().catch(handleErr));
-document.getElementById("monthSel").addEventListener("change", () => refreshDataset().catch(handleErr));
+  // Save camera BEFORE switching (prevents “zoom all”)
+  if (preserveViewOnDatasetSwitch && hasInitializedView) {
+    savedView = { center: map.getCenter(), zoom: map.getZoom() };
+  } else {
+    savedView = null;
+  }
+
+  document.getElementById("status").textContent = "Loading…";
+
+  const gj = await loadGeoJSON(url);
+  allFeatures = (gj.features || []).map(f => (f.properties = f.properties || {}, f));
+
+  // IMPORTANT: no fitBounds here
+  redraw();
+
+  // Restore camera AFTER redraw
+  if (preserveViewOnDatasetSwitch && savedView) {
+    map.setView(savedView.center, savedView.zoom, { animate: false });
+  }
+
+  document.getElementById("status").textContent = "";
+}
 
 function handleErr(err) {
   console.error(err);
-  document.getElementById("status").textContent = "Error: " + err.message;
-  alert(err.message + "\n\nTip: On GitHub Pages, confirm the file exists at /data/detected-drone-data_YYYY-MM.geojson and matches case exactly.");
+  document.getElementById("status").textContent = "";
+  alert(err.message + "\\n\\nTip: Ensure your /data filenames match detected-drone-data_YYYY-MM_AMS_bbox.geojson exactly.");
 }
 
-// initial load
+/** EVENTS **/
+document.querySelectorAll('input[name="viz"]').forEach(el => el.addEventListener("change", redraw));
+document.querySelectorAll('input[name="durBin"]').forEach(el => el.addEventListener("change", redraw));
+document.getElementById("yearSel").addEventListener("change", () => refreshDataset().catch(handleErr));
+document.getElementById("monthSel").addEventListener("change", () => refreshDataset().catch(handleErr));
+
+// Reset button: explicitly zoom to current dataset
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (currentBounds && currentBounds.isValid()) {
+    map.fitBounds(currentBounds, { padding: [25, 25] });
+    hasInitializedView = true;
+  }
+});
+
+// Initial load
 refreshDataset().catch(handleErr);
 </script>
 </body>
