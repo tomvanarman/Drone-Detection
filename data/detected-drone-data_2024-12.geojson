@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "name": "detected-drone-data_2024-12",
+  "bbox": [
+    4.2,
+    52.0,
+    5.85,
+    52.85
+  ],
+  "features": []
+}
