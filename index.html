@@ -221,10 +221,13 @@ let hasInitializedView = false;
 /** MAP **/
 const map = L.map("map", { zoomControl: true });
 
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-  maxZoom: 20,
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-}).addTo(map);
+L.tileLayer(
+  "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
+  {
+    maxZoom: 20,
+    attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+  }
+).addTo(map);
 loadBoundary().catch(console.error);
 let geoLayer = null;
 let allFeatures = [];
