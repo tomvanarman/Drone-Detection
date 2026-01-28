@@ -222,10 +222,10 @@ let hasInitializedView = false;
 const map = L.map("map", { zoomControl: true });
 
 L.tileLayer(
-  "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
+  "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
   {
     maxZoom: 20,
-    attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+    attribution: "&copy; cartodb-basemaps &copy; CARTO"
   }
 ).addTo(map);
 loadBoundary().catch(console.error);
