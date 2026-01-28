@@ -212,6 +212,26 @@ async function loadBoundary() {
   }).addTo(map);
 }
 
+  // --- Division line overlay (from KMZ -> GeoJSON) ---
+const DIVISION_LINE_URL = "./data/division_line.geojson";
+
+fetch(DIVISION_LINE_URL)
+  .then(r => {
+    if (!r.ok) throw new Error(`Failed to load ${DIVISION_LINE_URL} (HTTP ${r.status})`);
+    return r.json();
+  })
+  .then(gj => {
+    L.geoJSON(gj, {
+      style: {
+        color: "#ffffff",
+        weight: 3,
+        opacity: 0.9,
+        dashArray: "6,6"   // remove this line if you want it solid
+      }
+    }).addTo(map);
+  })
+  .catch(err => console.error("Division line load error:", err));
+
 
 // Camera lock: keep center/zoom when switching year/month
 const preserveViewOnDatasetSwitch = true;
