@@ -204,9 +204,11 @@ const geoRenderer = L.canvas({ padding: 0.5 });
 const DATA_DIR = "./data";
 const cache = new Map();
 
+'''
 // Optional boundary polygon (if you have it)
 const BOUNDARY_URL = "./Westhaven_HavenStad_boundary.geojson";
 let boundaryLayer = null;
+'''
 
 // Division line overlay (from KMZ -> GeoJSON)
 const DIVISION_LINE_URL = "./data/division_line.geojson";
@@ -216,6 +218,7 @@ let divisionLayer = null;
 map.createPane("divisionPane");
 map.getPane("divisionPane").style.zIndex = 650; // above overlayPane (400) and most vector layers
 
+'''
 async function loadBoundary() {
   const r = await fetch(BOUNDARY_URL);
   if (!r.ok) throw new Error(`Failed to load boundary: ${BOUNDARY_URL} (HTTP ${r.status})`);
@@ -238,6 +241,7 @@ async function loadBoundary() {
     }
   }).addTo(map);
 }
+'''
 
 async function loadDivisionLine() {
   const r = await fetch(DIVISION_LINE_URL);
@@ -264,7 +268,7 @@ async function loadDivisionLine() {
 }
 
 // Try to load overlays; if a file is missing we log but do not break the map
-loadBoundary().catch(err => console.warn("Boundary load error:", err.message));
+#loadBoundary().catch(err => console.warn("Boundary load error:", err.message));
 loadDivisionLine().catch(err => console.warn("Division line load error:", err.message));
 
 /** Camera lock: keep center/zoom when switching year/month **/
